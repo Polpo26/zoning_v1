@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Zoning Shape Files</title>
+    <!-- leaflet.css -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+    <!-- css -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- leaflet1.5.1 -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    <!-- jquery3.4.1 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- turf@5 -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+    <!-- omnivore -->
+    <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
+    <!-- data -->
+    <!-- Zoning Limits -->
+    <script src="geoJSON/zoning_WGS84_ok.geojson"></script>
+
+  </head>
+
+  <body>
+    <div id="map"></div>
+ 
+
+    <script type="text/javascript">
+        
+//var usLayer = omnivore.topojson('/geoJSON/zoning_WGS84.json')
+//    .addTo(map);
+        
+      var map = L.map('map', {
+        center: [33.1952,-117.2396],
+        zoomControl: false,
+        zoom: 12,
+        minZoom: 8,
+        maxBounds: [
+        [33.13139,-117.28816],
+        [33.23848,-117.19225]
+        ]
+        });
+        
+
+    // JSON zoning layer 
+    var zoning = omnivore.topojson('/geoJSON/zoning_WGS84.json', {
+        opacity: 1,    
+//        color: 'black',
+        fillColor: 'grey',
+        fillOpacity: 0.3,
+        weight: 0.5,
+        onEachFeature: function(feature, layer) {
+            layer.on({
+                mouseover: highlightFeatureOnMouseOver, // hover
+                mouseout: resetFeatureStyle
+            });
+        }
+    }).addTo(map);
+    //map.fitBounds(track.getBounds());
+    //zoning highlightFeatureOnMouseOver  
+    function highlightFeatureOnMouseOver(e) {
+        e.target.setStyle({
+            opacity: 1,      
+            color: 'red',
+            fillColor: 'yellow',
+            fillOpacity: 0.5,
+            weight: 2
+        });
+        e.target.bringToFront();
+    }
+    function resetFeatureStyle(e) {
+        zoning.resetStyle(e.target);
+    }
+    //zoning popup
+    zoning.eachLayer(function(layer) {
+
+
+        var popupContent = '<b>PlanningAr</b>: ' + layer.feature.properties.PlanningAr + '<br>';
+        popupContent += '<b>ZoningCode</b>: ' + layer.feature.properties.ZoningCode + '<br>';
+        popupContent += '<b>ZoningDesc</b>: ' + layer.feature.properties.ZoningDesc + '<br>';
+        popupContent += '<b>DetailCode</b>: ' + layer.feature.properties.DetailCode + '<br>';
+        popupContent += '<b>CreateDate</b>: ' + layer.feature.properties.CreateDate + '<br>';
+        popupContent += '<b>LastEdited</b>: ' + layer.feature.properties.LastEdited + '<br>';
+        popupContent += '<b>Shape_area</b>: ' + layer.feature.properties.Shape_area + '<br>';
+        popupContent += '<b>Shape_len</b>: ' + layer.feature.properties.Shape_len + '<br>';
+        layer.bindPopup(popupContent);
+    });
+
+    //Basemaps List
+    var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    });
+
+    var Wikimedia = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png', {
+      attribution: '<a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia</a>',
+      minZoom: 1,
+      maxZoom: 19
+    });
+    var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      maxZoom: 17,
+      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+
+    var basemaps = {
+      "OpenStreetMap Mapnik": OpenStreetMap_Mapnik,
+      "Wikimedia": Wikimedia,
+      "Esri WorldImagery": Esri_WorldImagery,
+      "OpenTopoMap": OpenTopoMap
+    };
+
+    var overlays = {
+            "Zoning Layer": zoning,
+    };
+
+    //Legend
+    L.control.layers(basemaps, overlays, {
+      collapsed: false
+    }).addTo(map); 
+    </script>
+  </body>
+</html>
